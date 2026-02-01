@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>3D预览网站</title>
+    <style>
+        body { margin: 0; background: #111; overflow: hidden; }
+        #info { position: absolute; top: 10px; left: 10px; color: white; font-family: sans-serif; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="info">鼠标左键旋转 | 右键平移 | 滚轮缩放<br>按 <b>W</b> 键切换布线</div>
+
+    <script type="importmap">
+        { "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }}
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 场景、相机、渲染器
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 创建模型（圆环）
+        const geometry = new THREE.TorusKnotGeometry(0.7, 0.3, 100, 16);
+        const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc, wireframe: false });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // 灯光
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 2);
+        scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
+
+        // 控制器（实现自由旋转）
+        const controls = new OrbitControls(camera, renderer.domElement);
+        camera.position.z = 3;
+        controls.enableDamping = true;
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // W键切换布线
+        window.addEventListener('keydown', (e) => {
+            if(e.key.toLowerCase() === 'w') material.wireframe = !material.wireframe;
+        });
+
+        // 窗口缩放适配
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
